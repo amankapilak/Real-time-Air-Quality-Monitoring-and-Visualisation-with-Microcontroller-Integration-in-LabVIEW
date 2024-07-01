@@ -1,0 +1,68 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Set the LCD address to 0x27 for a 16x2 display
+const int mq4Pin = A0; // MQ4 analog pin
+const int mq7Pin = A1; // MQ7 analog pin
+const int mq135Pin = A2; // MQ135 analog pin
+
+const int numReadings = 10; // Number of readings to average
+int mq4Readings[numReadings]; // Array to store MQ4 readings
+int mq7Readings[numReadings]; // Array to store MQ7 readings
+int mq135Readings[numReadings]; // Array to store MQ135 readings
+int mq4Index = 0; // Index for MQ4 readings array
+int mq7Index = 0; // Index for MQ7 readings array
+int mq135Index = 0; // Index for MQ135 readings array
+int mq4Total = 0; // Total of MQ4 readings
+int mq7Total = 0; // Total of MQ7 readings
+int mq135Total = 0; // Total of MQ135 readings
+
+void setup() {
+  Serial.begin(9600); // Start serial communication
+  lcd.init(); // Initialize the LCD
+  lcd.backlight(); // Turn on the backlight
+}
+
+void loop() {
+  // Read sensor values
+  int mq4Value = analogRead(mq4Pin) / 2; // Halve the MQ4 sensor reading
+  int mq7Value = analogRead(mq7Pin) / 2; // Halve the MQ7 sensor reading
+  int mq135Value = analogRead(mq135Pin) / 2; // Halve the MQ135 sensor reading
+
+  // Add the new readings to the total
+  mq4Total -= mq4Readings[mq4Index];
+  mq4Readings[mq4Index] = mq4Value;
+  mq4Total += mq4Readings[mq4Index];
+
+  mq7Total -= mq7Readings[mq7Index];
+  mq7Readings[mq7Index] = mq7Value;
+  mq7Total += mq7Readings[mq7Index];
+
+  mq135Total -= mq135Readings[mq135Index];
+  mq135Readings[mq135Index] = mq135Value;
+  mq135Total += mq135Readings[mq135Index];
+
+  // Increment index for circular buffer
+  mq4Index = (mq4Index + 1) % numReadings;
+  mq7Index = (mq7Index + 1) % numReadings;
+  mq135Index = (mq135Index + 1) % numReadings;
+
+  // Calculate the average of the readings
+  int mq4Average = mq4Total / numReadings;
+  int mq7Average = mq7Total / numReadings;
+  int mq135Average = mq135Total / numReadings;
+
+  // Create a string to hold all sensor readings
+  String sensorReadings = "CO:" + String(mq4Average) + "N:" + String(mq7Average) + "G:" + String(mq135Average);
+
+  // Print sensor readings on serial monitor
+  Serial.println(sensorReadings); // Print sensor readings on serial monitor
+
+  // Display sensor readings on LCD
+  lcd.clear(); // Clear the LCD screen
+  lcd.setCursor(0, 0); // Set cursor to the first row
+  lcd.print(sensorReadings); // Print sensor readings on LCD
+
+  // Add a delay of 1 second
+  delay(1000); // 1 second delay
+}
