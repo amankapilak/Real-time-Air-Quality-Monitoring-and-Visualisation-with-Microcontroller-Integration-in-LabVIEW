@@ -1,0 +1,2 @@
+# Real-time-Air-Quality-Monitoring-and-Visualisation-with-Microcontroller-Integration-in-LabVIEW
+Developed a real-time air quality monitoring system that integrates air quality sensors with a microcontroller and visualizes the data using LabVIEW. The project involved designing a reliable and efficient system for monitoring various air quality parameters and providing real-time visualization and alerts.
